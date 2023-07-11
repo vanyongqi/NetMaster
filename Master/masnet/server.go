@@ -1,6 +1,7 @@
 package masnet
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"netMaster/Master/masiface"
@@ -32,8 +33,9 @@ func (s *Server) Start() {
 			return
 		}
 		fmt.Println("start Master successful", s.Name, "Listening :", s.Port)
-
-		//阻塞 等待客户端连接，处理客户端连接业务
+		var cid uint32
+		cid = 0
+		// 3阻塞 等待客户端连接，处理客户端连接业务
 		for {
 			//客户端连接，阻塞返回
 			conn, err := listener.AcceptTCP()
@@ -41,29 +43,26 @@ func (s *Server) Start() {
 				fmt.Println("Accept arr", err)
 				continue
 			}
-			//client 以及建立连接，可以开始进行业务
-			go func() {
-				for {
-					buf := make([]byte, 512)
-					cnt, err := conn.Read(buf) //阻塞
-					if err != nil {
-						fmt.Println("recv buf err", err)
-						continue
-					}
-					//echo
-					fmt.Printf("recv : %s,cnt is %d \n", buf, cnt)
-					if _, err := conn.Write(buf[0:cnt]); err != nil {
-						fmt.Println("write back buf err")
-						continue
-					}
-				}
-				fmt.Println()
-			}()
+			//将处理心连接的业务方法 和 conn 进行绑定 得到我们的连接模块
+			dealConn := NewConnection(conn, cid, CallBackToClient)
+			cid++
+
+			//启动当前连接业务处理
+			go dealConn.Start()
 		}
 	}()
 
 }
 
+// 定义当前客户端连接所绑定的handle api，写死的，以后修改为路由
+func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
+	fmt.Println("[Conn Handlel CallbackToClient]...")
+	if _, err := conn.Write(data[:cnt]); err != nil {
+		fmt.Println("write back buf err", err)
+		return errors.New("CallBackToClient error")
+	}
+	return nil
+}
 func (s *Server) Stop() {
 	//TODO 释放服务器资源、状态，进行停止和回收
 
