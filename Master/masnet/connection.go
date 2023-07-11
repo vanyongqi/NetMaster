@@ -6,8 +6,7 @@ import (
 	"netMaster/Master/masiface"
 )
 
-//连接模块
-
+// 连接模块
 type Connection struct {
 	//当前连接的socket
 	Conn *net.TCPConn
@@ -21,8 +20,7 @@ type Connection struct {
 	ExitChan chan bool
 }
 
-//初始化连接模块方法
-
+// 初始化连接模块方法
 func NewConnection(conn *net.TCPConn, connID uint32, callback_api masiface.HandleFunc) *Connection {
 	c := &Connection{
 		Conn:      conn,
@@ -39,7 +37,7 @@ func (c *Connection) StartReader() {
 	fmt.Println("Reader Goroutine is running ...")
 	defer fmt.Println("CoonID =", c.ConnID, "Reader is exit,remote add is ", c.RemoteAddr().String())
 	defer c.Stop()
-
+	//start := time.Now()
 	for {
 		//读取客户端的数据到buffer中，最大512字节
 		buf := make([]byte, 512)
@@ -53,11 +51,18 @@ func (c *Connection) StartReader() {
 			fmt.Println("ConnID", "handle is error", err)
 			break
 		}
+
+		//cur := time.Now()
+		//elapsed := cur.Sub(start)
+		//if elapsed.Seconds() > 5 {
+		//	fmt.Println("time is Up, please add money!")
+		//	break
+		//}
 	}
 }
 
 func (c *Connection) Start() {
-	fmt.Println("Conn start() CooID=", c.ConnID)
+	fmt.Println("Conn start() is running ,this CoonID=", c.ConnID)
 	//启动当前连接的读数据业务
 	go c.StartReader()
 	//TODO 启动从当前连接写数据的业务

@@ -19,7 +19,7 @@ func (s *Server) Start() {
 	fmt.Printf("[start] Server Listener at IP :%s, Port:%d,is starting\n", s.IP, s.Port)
 	//1 get  addr
 	go func() {
-		//net 参数为 "ip", "ip4" 或者为"ip6"，net 为空这默认 ip
+		//"tcp", "tcp4", "tcp6" 默认为tcp
 		addr, err := net.ResolveTCPAddr(s.IPversion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
 			fmt.Println("error happened: resovle tcp add error", err)
@@ -40,14 +40,13 @@ func (s *Server) Start() {
 			//客户端连接，阻塞返回
 			conn, err := listener.AcceptTCP()
 			if err != nil {
-				fmt.Println("Accept arr", err)
+				fmt.Println("Accept error: ", err)
 				continue
 			}
-			//将处理心连接的业务方法 和 conn 进行绑定 得到我们的连接模块
+			//将监听到的新连接的业务方法 与 conn 进行绑定 得到我们的连接模块
 			dealConn := NewConnection(conn, cid, CallBackToClient)
 			cid++
-
-			//启动当前连接业务处理
+			//异步处理启动当前连接业务处理
 			go dealConn.Start()
 		}
 	}()
@@ -56,11 +55,12 @@ func (s *Server) Start() {
 
 // 定义当前客户端连接所绑定的handle api，写死的，以后修改为路由
 func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	fmt.Println("[Conn Handlel CallbackToClient]...")
+
 	if _, err := conn.Write(data[:cnt]); err != nil {
 		fmt.Println("write back buf err", err)
 		return errors.New("CallBackToClient error")
 	}
+	fmt.Println("[Conn has handled a Callback To Client]...")
 	return nil
 }
 func (s *Server) Stop() {
@@ -74,6 +74,7 @@ func (s *Server) Serve() {
 	//阻塞，以免start完成后结束server
 	select {}
 }
+
 func NewServer(name string) masiface.Iserver {
 	s := &Server{
 		Name:      name,
