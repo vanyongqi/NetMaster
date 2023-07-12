@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"netMaster/Master/masiface"
+	"netMaster/Master/utils"
 )
 
 // 实现iserver接口
@@ -16,7 +17,11 @@ type Server struct {
 }
 
 func (s *Server) Start() {
-	fmt.Printf("[start] Server Listener at IP :%s, Port:%d,is starting\n", s.IP, s.Port)
+	fmt.Printf("[netMaster] Server Name: %s,listener at IP :%s,Port:%d is starting\n",
+		utils.GlobalObject.Name, utils.GlobalObject.Host, utils.GlobalObject.TcpPort)
+	fmt.Printf("[netMaster] Version %s,MaxConn:%d,MaxPacketSize:%d\n",
+		utils.GlobalObject.Version, utils.GlobalObject.MaxConn, utils.GlobalObject.MaxPackageSize)
+
 	//1 get  addr
 	go func() {
 		//net 参数为 "ip", "ip4" 或者为"ip6"，net 为空这默认 ip
@@ -86,10 +91,10 @@ func (s *Server) AddRouter(router masiface.IRouter) {
 
 func NewServer(name string) masiface.Iserver {
 	s := &Server{
-		Name:      name,
+		Name:      utils.GlobalObject.Name,
 		IPversion: "tcp4",
-		IP:        "0.0.0.0",
-		Port:      8888,
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
 		Router:    nil,
 	}
 	return s

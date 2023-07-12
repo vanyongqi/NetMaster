@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"netMaster/Master/masiface"
+	"netMaster/Master/utils"
 )
 
 //连接模块
@@ -23,8 +24,7 @@ type Connection struct {
 	Router masiface.IRouter
 }
 
-//初始化连接模块方法
-
+// 初始化连接模块方法
 func NewConnection(conn *net.TCPConn, connID uint32, router masiface.IRouter) *Connection {
 	c := &Connection{
 		Conn:   conn,
@@ -44,8 +44,8 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		//读取客户端的数据到buffer中，最大512字节
-		buf := make([]byte, 512)
+		//读取客户端的数据到buffer中
+		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
 		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err", err)
