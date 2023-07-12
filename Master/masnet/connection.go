@@ -15,21 +15,24 @@ type Connection struct {
 	ConnID uint32
 	//当前连接状态
 	isClosed bool
-	//当前连接所绑定的处理业务的方法
-	handleAPI masiface.HandleFunc
+	//当前连接所绑定的处理业务的方法 ==》替换为router
+	//handleAPI masiface.HandleFunc
 	//告知当前连接已经退出/停止channel 通过管道告知要退出
 	ExitChan chan bool
+	//当前链接处理的方法
+	Router masiface.IRouter
 }
 
 //初始化连接模块方法
 
-func NewConnection(conn *net.TCPConn, connID uint32, callback_api masiface.HandleFunc) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, router masiface.IRouter) *Connection {
 	c := &Connection{
-		Conn:      conn,
-		ConnID:    connID,
-		handleAPI: callback_api,
-		isClosed:  false,
-		ExitChan:  make(chan bool, 1),
+		Conn:   conn,
+		ConnID: connID,
+		//handleAPI: callback_api,//==》被替换
+		isClosed: false,
+		Router:   router,
+		ExitChan: make(chan bool, 1),
 	}
 	return c
 }
@@ -43,16 +46,29 @@ func (c *Connection) StartReader() {
 	for {
 		//读取客户端的数据到buffer中，最大512字节
 		buf := make([]byte, 512)
-		cnt, err := c.Conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err", err)
 			continue
 		}
-		//调用当前来凝结所绑定的Handle API
-		if err := c.handleAPI(c.Conn, buf, cnt); err != nil {
-			fmt.Println("ConnID", "handle is error", err)
-			break
+		//req是一个对象
+		req := Request{
+			conn: c,
+			data: buf,
 		}
+		//c.Router.PreHandle(&req)
+		go func(request masiface.IRequest) {
+			c.Router.PreHandle(request)
+			c.Router.Handle(request)
+			c.Router.PostHandle(request)
+		}(&req)
+
+		//调用路由，从路由中找到方法
+		//if err:= c.HandleAPI(c.Conn,buf,cnt);err!=nil{
+		//fmt.Println("ConnID",c.ConnID,"handle is error",err)
+		//break
+		//}
+
 	}
 }
 
@@ -76,7 +92,8 @@ func (c *Connection) Stop() {
 	close(c.ExitChan)
 }
 
-func (c *Connection) GetTCPConnetcion() *net.TCPConn {
+func (c *Connection) GetTCPConnection() *net.TCPConn {
+	//TODO implement me
 	return c.Conn
 }
 

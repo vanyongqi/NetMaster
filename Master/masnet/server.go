@@ -1,7 +1,6 @@
 package masnet
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"netMaster/Master/masiface"
@@ -13,6 +12,7 @@ type Server struct {
 	IPversion string
 	IP        string
 	Port      int
+	Router    masiface.IRouter
 }
 
 func (s *Server) Start() {
@@ -44,7 +44,8 @@ func (s *Server) Start() {
 				continue
 			}
 			//将处理心连接的业务方法 和 conn 进行绑定 得到我们的连接模块
-			dealConn := NewConnection(conn, cid, CallBackToClient)
+			//dealConn := NewConnection(conn, cid, CallBackToClient)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 
 			//启动当前连接业务处理
@@ -54,15 +55,16 @@ func (s *Server) Start() {
 
 }
 
-// 定义当前客户端连接所绑定的handle api，写死的，以后修改为路由
-func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	fmt.Println("[Conn Handlel CallbackToClient]...")
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("write back buf err", err)
-		return errors.New("CallBackToClient error")
-	}
-	return nil
-}
+// // 定义当前客户端连接所绑定的handle api，写死的，以后修改为路由
+//
+//	func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
+//		fmt.Println("[Conn Handlel CallbackToClient]...")
+//		if _, err := conn.Write(data[:cnt]); err != nil {
+//			fmt.Println("write back buf err", err)
+//			return errors.New("CallBackToClient error")
+//		}
+//		return nil
+//	}
 func (s *Server) Stop() {
 	//TODO 释放服务器资源、状态，进行停止和回收
 
@@ -74,12 +76,21 @@ func (s *Server) Serve() {
 	//阻塞，以免start完成后结束server
 	select {}
 }
+
+// 添加一个路由方法
+func (s *Server) AddRouter(router masiface.IRouter) {
+	//TODO implement me
+	s.Router = router
+	fmt.Println("Add Router Succ!")
+}
+
 func NewServer(name string) masiface.Iserver {
 	s := &Server{
 		Name:      name,
 		IPversion: "tcp4",
 		IP:        "0.0.0.0",
 		Port:      8888,
+		Router:    nil,
 	}
 	return s
 }
