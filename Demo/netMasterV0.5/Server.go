@@ -17,6 +17,7 @@ func (this *PingRouter) Handle(request masiface.IRequest) {
 	//先读取客户端语句，再回写ping... ping... ping...
 	fmt.Println("recv from client ;msgID = ", request.GetMsgId(),
 		"data = ", string(request.GetData()))
+	//send 会打包 然后client解包
 	err := request.GetConnection().SendMsg(1, []byte("ping----ping----ping"))
 	if err != nil {
 		fmt.Println(err)

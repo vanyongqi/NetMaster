@@ -48,8 +48,9 @@ func (s *Server) Start() {
 				fmt.Println("Accept arr", err)
 				continue
 			}
-			//将处理心连接的业务方法 和 conn 进行绑定 得到我们的连接模块
+			//将处理新连接的业务方法 和 conn 进行绑定 得到我们的连接模块
 			//dealConn := NewConnection(conn, cid, CallBackToClient)
+			//死函数CallBackToClient 替换为路由属性
 			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 

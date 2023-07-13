@@ -34,22 +34,22 @@ func main() {
 		//服务器回复一个message msgId 1 pingping。。。
 		//先读取流中的head部分，粘包处理  ID datalen
 
-		binaryHead := make([]byte, dp.GetHeadLen())
+		binaryHead := make([]byte, dp.GetHeadLen()) //读头
 		if _, err := io.ReadFull(conn, binaryHead); err != nil {
 			fmt.Println("read head error ", err)
 			break
 		}
 
-		msgHead, err := dp.UnPack(binaryHead)
+		msgHead, err := dp.UnPack(binaryHead) //解头
 		if err != nil {
 			fmt.Println("client unpack masgHead error", err)
 			break
 		}
 		if msgHead.GetMsgLen() > 0 {
 			//msg 里是有数据的
-			msg := msgHead.(*masnet.Message)
+			msg := msgHead.(*masnet.Message) //根据头创消息缓冲
 			msg.Data = make([]byte, msg.GetMsgLen())
-
+			//读消息缓冲，接受到了回复的消息了
 			if _, err := io.ReadFull(conn, msg.Data); err != nil {
 				fmt.Println("read msg data error", err)
 				return

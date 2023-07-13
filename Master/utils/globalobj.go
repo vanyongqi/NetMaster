@@ -7,8 +7,7 @@ import (
 )
 
 /*
-存储一切有关框架的去哪句参数，供其他模块使用
-一些参数可以通过.json文件由用户配置
+存储一切有关框架服务端的全局参数，供其他模块使用，
 */
 
 type GlobalObj struct {
@@ -17,7 +16,6 @@ type GlobalObj struct {
 	TcpPort   int
 	Name      string
 
-	//
 	Version        string //框架版本
 	MaxConn        int    //最大连接数
 	MaxPackageSize uint32 //数据包的最大值
@@ -32,17 +30,17 @@ var GlobalObject *GlobalObj
 func init() {
 	//default value
 	GlobalObject = &GlobalObj{
+		Host:           "127.0.0.1",
 		Name:           "NetMaster ServerApp",
 		Version:        "V0.5",
 		TcpPort:        8888,
 		MaxConn:        1000,
 		MaxPackageSize: 4096,
 	}
-	//从conf加载用户自定义的参数
-	//GlobalObject.Reload()
+
 }
 func (g *GlobalObj) Reload() {
-	data, err := ioutil.ReadFile("Demo/netMasterV0.4/conf/master.json")
+	data, err := ioutil.ReadFile("Demo/netMasterV0.5/conf/master.json")
 	if err != nil {
 		panic(err)
 	}

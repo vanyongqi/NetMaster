@@ -53,7 +53,7 @@ func (c *Connection) StartReader() {
 		//	continue
 		//}
 
-		//创建一个拆包解包的对象
+		//创建一个拆包解包的对象工具
 		dp := NewDataPack()
 		//读取客户端的MsgHead 二进制流8个字节
 		headData := make([]byte, dp.GetHeadLen())
@@ -71,7 +71,7 @@ func (c *Connection) StartReader() {
 		//根据datalen，再次读取data，放到msg.data中
 		var data []byte
 		if msg.GetMsgLen() > 0 {
-			data = make([]byte, msg.GetMsgLen())
+			data = make([]byte, msg.GetMsgLen()) //拆包是为了获得包的长度，然后进行读取
 			if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
 				fmt.Println("read msg data error", err)
 				break
@@ -86,7 +86,7 @@ func (c *Connection) StartReader() {
 		//c.Router.PreHandle(&req)
 		go func(request masiface.IRequest) {
 			//	c.Router.PreHandle(request)
-			c.Router.Handle(request)
+			c.Router.Handle(request) //c.Router.Handle(request)
 			//	c.Router.PostHandle(request)
 		}(&req)
 
@@ -138,7 +138,6 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	if c.isClosed == true {
 		return errors.New("Connection Closed When send error")
 	}
-
 	//将data进行封包 MsgDataLen /MsgID / Data
 	dp := NewDataPack()
 	BinaryMsg, err := dp.Pack(NewMessage(msgId, data))
