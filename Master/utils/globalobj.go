@@ -39,7 +39,7 @@ func init() {
 		MaxPackageSize: 4096,
 	}
 	//从conf加载用户自定义的参数
-	GlobalObject.Reload()
+	//GlobalObject.Reload()
 }
 func (g *GlobalObj) Reload() {
 	data, err := ioutil.ReadFile("Demo/netMasterV.04/conf/master.json")
