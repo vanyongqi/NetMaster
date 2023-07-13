@@ -33,7 +33,7 @@ func init() {
 	//default value
 	GlobalObject = &GlobalObj{
 		Name:           "NetMaster ServerApp",
-		Version:        "V0.4",
+		Version:        "V0.5",
 		TcpPort:        8888,
 		MaxConn:        1000,
 		MaxPackageSize: 4096,
@@ -42,7 +42,7 @@ func init() {
 	//GlobalObject.Reload()
 }
 func (g *GlobalObj) Reload() {
-	data, err := ioutil.ReadFile("Demo/netMasterV.04/conf/master.json")
+	data, err := ioutil.ReadFile("Demo/netMasterV0.4/conf/master.json")
 	if err != nil {
 		panic(err)
 	}
