@@ -32,7 +32,7 @@ func init() {
 	GlobalObject = &GlobalObj{
 		Host:           "127.0.0.1",
 		Name:           "NetMaster ServerApp",
-		Version:        "V0.5",
+		Version:        "V0.6",
 		TcpPort:        8888,
 		MaxConn:        1000,
 		MaxPackageSize: 4096,

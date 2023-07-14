@@ -13,7 +13,9 @@ type Server struct {
 	IPversion string
 	IP        string
 	Port      int
-	Router    masiface.IRouter
+	//Router    masiface.IRouter
+	//当前server消息管理模块，用来绑定MsgID和对应处理业务API关系
+	MsgHandle masiface.IMsgHandle
 }
 
 func (s *Server) Start() {
@@ -51,7 +53,7 @@ func (s *Server) Start() {
 			//将处理新连接的业务方法 和 conn 进行绑定 得到我们的连接模块
 			//dealConn := NewConnection(conn, cid, CallBackToClient)
 			//死函数CallBackToClient 替换为路由属性
-			dealConn := NewConnection(conn, cid, s.Router)
+			dealConn := NewConnection(conn, cid, s.MsgHandle)
 			cid++
 
 			//启动当前连接业务处理
@@ -84,9 +86,9 @@ func (s *Server) Serve() {
 }
 
 // 添加一个路由方法
-func (s *Server) AddRouter(router masiface.IRouter) {
+func (s *Server) AddRouter(msgID uint32, router masiface.IRouter) {
 	//TODO implement me
-	s.Router = router
+	s.MsgHandle.AddRouter(msgID, router)
 	fmt.Println("Add Router Succ!")
 }
 
@@ -96,7 +98,8 @@ func NewServer(name string) masiface.Iserver {
 		IPversion: "tcp4",
 		IP:        utils.GlobalObject.Host,
 		Port:      utils.GlobalObject.TcpPort,
-		Router:    nil,
+		//Router:    nil,
+		MsgHandle: NewMsgHandle(),
 	}
 	return s
 }

@@ -22,18 +22,20 @@ type Connection struct {
 	//告知当前连接已经退出/停止channel 通过管道告知要退出
 	ExitChan chan bool
 	//当前链接处理的方法
-	Router masiface.IRouter
+	//Router masiface.IRouter
+	//消息的管理MsgID和对应的处理业务的API关系
+	MsgHandler masiface.IMsgHandle
 }
 
 // 初始化连接模块方法
-func NewConnection(conn *net.TCPConn, connID uint32, router masiface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, msgHandler masiface.IMsgHandle) *Connection {
 	c := &Connection{
 		Conn:   conn,
 		ConnID: connID,
 		//handleAPI: callback_api,//==》被替换
-		isClosed: false,
-		Router:   router,
-		ExitChan: make(chan bool, 1),
+		isClosed:   false,
+		MsgHandler: msgHandler,
+		ExitChan:   make(chan bool, 1),
 	}
 	return c
 }
@@ -83,12 +85,14 @@ func (c *Connection) StartReader() {
 			conn: c,
 			msg:  msg,
 		}
+		//根据绑定好的MsgID 找到对应的方法
+		go c.MsgHandler.DoMsgHandler(&req)
 		//c.Router.PreHandle(&req)
-		go func(request masiface.IRequest) {
-			//	c.Router.PreHandle(request)
-			c.Router.Handle(request) //c.Router.Handle(request)
-			//	c.Router.PostHandle(request)
-		}(&req)
+		//go func(request masiface.IRequest) {
+		//	//	c.Router.PreHandle(request)
+		//	c.Router.Handle(request) //c.Router.Handle(request)
+		//	//	c.Router.PostHandle(request)
+		//}(&req)
 
 		//调用路由，从路由中找到方法
 		//if err:= c.HandleAPI(c.Conn,buf,cnt);err!=nil{
