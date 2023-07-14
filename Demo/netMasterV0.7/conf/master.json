@@ -1,6 +1,6 @@
 
 {
-  "Name": "netMaster V0.6 ",
+  "Name": "netMaster V0.7 ",
   "Host": "127.0.0.1",
   "TcpPort": 8888,
   "MaxConn": 3
