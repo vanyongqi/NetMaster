@@ -10,7 +10,7 @@ import (
 
 // Client
 func main() {
-	fmt.Println("Client V0.6 start...")
+	fmt.Println("Client V0.8 start...")
 	time.Sleep(1 * time.Second)
 	//conn 连接远程服务器
 	conn, err := net.Dial("tcp", "127.0.0.1:8888")

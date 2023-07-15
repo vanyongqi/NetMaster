@@ -6,11 +6,13 @@ import (
 	"io"
 	"net"
 	"netMaster/Master/masiface"
+	"netMaster/Master/utils"
 )
 
-//连接模块
-
+// 连接模块
 type Connection struct {
+	//当前Conncetion隶属于的server
+	TcpServer masiface.Iserver
 	//当前连接的socket
 	Conn *net.TCPConn
 	//连接id
@@ -20,27 +22,33 @@ type Connection struct {
 	//当前连接所绑定的处理业务的方法 ==》替换为router
 	//handleAPI masiface.HandleFunc
 	//告知当前连接已经退出/停止channel 通过管道告知要退出
-	ExitChan chan bool
+	ExitChan chan bool //是否断开链接
 	//当前链接处理的方法
 	//Router masiface.IRouter
 	//消息的管理MsgID和对应的处理业务的API关系
 	// 用于无缓冲的管道，用于读写goroutine 之间的管道通信
-	msgChan    chan []byte
+	msgChan    chan []byte //消息
 	MsgHandler masiface.IMsgHandle
 }
 
 // 初始化连接模块方法
-func NewConnection(conn *net.TCPConn, connID uint32, msgHandler masiface.IMsgHandle) *Connection {
+func NewConnection(server masiface.Iserver, conn *net.TCPConn, connID uint32, msgHandler masiface.IMsgHandle) *Connection {
 	c := &Connection{
-		Conn:   conn,
-		ConnID: connID,
+		TcpServer: server,
+		Conn:      conn,
+		ConnID:    connID,
 		//handleAPI: callback_api,//==》被替换
 		isClosed:   false,
 		MsgHandler: msgHandler,
 		msgChan:    make(chan []byte), //无缓冲chan
 		ExitChan:   make(chan bool, 1),
 	}
+	c.TcpServer.GetConnMgr().Add(c)
 	return c
+}
+
+func (s *Server) GetConnMgr() masiface.IConnManager {
+	return s.ConnMgr
 }
 
 // 读业务方法
@@ -81,7 +89,13 @@ func (c *Connection) StartReader() {
 			msg:  msg,
 		}
 		//根据绑定好的MsgID 找到对应路由的方法
-		go c.MsgHandler.DoMsgHandler(&req)
+
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			//已经开启了工作池机制，则发送给工作池
+			c.MsgHandler.SendMsgToTaskQueue(&req)
+		} else {
+			go c.MsgHandler.DoMsgHandler(&req)
+		}
 	}
 }
 
@@ -113,9 +127,10 @@ func (c *Connection) Start() {
 	//启动当前连接的读数据业务
 	go c.StartReader()
 	//TODO 启动从当前连接写数据的业务
-
 	go c.StartWriter()
 
+	//按照开发者传递进来的 创建链接之后 需要调用的处理业务，执行对应的hook函数
+	c.TcpServer.CallOnConnStart(c)
 }
 
 func (c *Connection) Stop() {
@@ -124,11 +139,13 @@ func (c *Connection) Stop() {
 		return
 	}
 	c.isClosed = true
+	c.TcpServer.CallOnStop(c)
 	//关闭socket连接
 	c.Conn.Close()
 	//回收资源
 	//告知Writer关闭
 	c.ExitChan <- true
+	c.TcpServer.GetConnMgr().Remove(c)
 	close(c.ExitChan)
 	close(c.msgChan)
 }

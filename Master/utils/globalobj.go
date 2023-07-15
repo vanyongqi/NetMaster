@@ -16,10 +16,11 @@ type GlobalObj struct {
 	TcpPort   int
 	Name      string
 
-	Version        string //框架版本
-	MaxConn        int    //最大连接数
-	MaxPackageSize uint32 //数据包的最大值
-
+	Version          string //框架版本
+	MaxConn          int    //最大连接数
+	MaxPackageSize   uint32 //数据包的最大值
+	WorkerPoolSize   uint32 //当前业务工作池的gorouitine数量
+	MaxWorkerTaskLen uint32 //允许用户最多开辟多少个worker
 }
 
 /*
@@ -30,12 +31,14 @@ var GlobalObject *GlobalObj
 func init() {
 	//default value
 	GlobalObject = &GlobalObj{
-		Host:           "127.0.0.1",
-		Name:           "NetMaster ServerApp",
-		Version:        "V0.6",
-		TcpPort:        8888,
-		MaxConn:        1000,
-		MaxPackageSize: 4096,
+		Host:             "127.0.0.1",
+		Name:             "NetMaster ServerApp",
+		Version:          "V0.6",
+		TcpPort:          8888,
+		MaxConn:          3,
+		MaxPackageSize:   4096,
+		WorkerPoolSize:   10,
+		MaxWorkerTaskLen: 1024,
 	}
 
 }
