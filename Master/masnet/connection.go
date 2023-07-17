@@ -7,6 +7,7 @@ import (
 	"net"
 	"netMaster/Master/masiface"
 	"netMaster/Master/utils"
+	"sync"
 )
 
 // 连接模块
@@ -29,6 +30,10 @@ type Connection struct {
 	// 用于无缓冲的管道，用于读写goroutine 之间的管道通信
 	msgChan    chan []byte //消息
 	MsgHandler masiface.IMsgHandle
+	//链接属性集合
+	property map[string]interface{}
+	//保护链接属性的锁
+	propertyLock sync.RWMutex
 }
 
 // 初始化连接模块方法
@@ -42,6 +47,7 @@ func NewConnection(server masiface.Iserver, conn *net.TCPConn, connID uint32, ms
 		MsgHandler: msgHandler,
 		msgChan:    make(chan []byte), //无缓冲chan
 		ExitChan:   make(chan bool, 1),
+		property:   make(map[string]interface{}),
 	}
 	c.TcpServer.GetConnMgr().Add(c)
 	return c
@@ -180,4 +186,34 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	//}
 	c.msgChan <- BinaryMsg
 	return nil
+}
+
+// 设置链接属性
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+	//添加一个链接属性
+	c.property[key] = value
+}
+
+// 获取链接属性
+func (c *Connection) GetProperty(key string) (value interface{}, err error) {
+	c.propertyLock.RLock()
+	defer c.propertyLock.RUnlock()
+
+	if value, ok := c.property[key]; ok {
+		return value, nil
+	} else {
+		return nil, errors.New("no property found")
+	}
+
+}
+
+// 移除链接属性
+func (c *Connection) RemoveProperty(key string) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	//删除属性
+	delete(c.property, key)
 }
