@@ -8,14 +8,6 @@ import (
 	"time"
 )
 
-/*
-0 鲁班七号 不得不承认，有时候肌肉比头脑管用。
-1 娜可露露 玛玛哈哈
-1 周瑜 	  这种前赴后继送死的勇气令我钦佩！
-2 孙策     你以为自己是谁?灾祸吗?命运吗?可终究会被我踩在脚下！
-4 赵云     会安然无恙的,我保证。
-*/
-
 // Client
 func main() {
 	fmt.Println("Client V0.8 start...")
@@ -28,7 +20,7 @@ func main() {
 	for {
 		//发送封包消息
 		dp := masnet.NewDataPack()
-		binaryMsg, _ := dp.Pack(masnet.NewMessage(0, []byte("玩家0号发送请求：鲁班七号--->")))
+		binaryMsg, _ := dp.Pack(masnet.NewMessage(1, []byte("玩家1号发送请求：娜可露露--->")))
 		if err != nil {
 			fmt.Println("Pack error", err)
 			return
@@ -79,7 +71,7 @@ func main() {
 		//	return
 		//}
 		//fmt.Printf("server call back %s,cnt =%d \n", buf, cnt)
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 	//调用 Write写数据kk
 

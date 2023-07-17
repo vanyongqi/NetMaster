@@ -35,7 +35,7 @@ func init() {
 		Name:             "NetMaster ServerApp",
 		Version:          "V0.6",
 		TcpPort:          8888,
-		MaxConn:          3,
+		MaxConn:          6,
 		MaxPackageSize:   4096,
 		WorkerPoolSize:   10,
 		MaxWorkerTaskLen: 1024,
@@ -43,7 +43,7 @@ func init() {
 
 }
 func (g *GlobalObj) Reload() {
-	data, err := ioutil.ReadFile("Demo/netMasterV0.5/conf/master.json")
+	data, err := ioutil.ReadFile("Demo/netMasterV1.0/conf/master.json")
 	if err != nil {
 		panic(err)
 	}

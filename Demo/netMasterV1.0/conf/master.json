@@ -1,0 +1,9 @@
+
+{
+  "Name": "netMaster V1.0 ",
+  "Host": "127.0.0.1",
+  "TcpPort": 8888,
+  "MaxConn": 10,
+  "WorkerPoolSize": 10
+
+}
