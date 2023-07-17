@@ -11,7 +11,6 @@ TCP网络服务框架
 ### 提供demo进行测试验证
 ### DemoV1.0
 
-
 > V1.0是根据编写的TCP网络框架，所设定的基于终端的Client与Server，通过文字来模拟王者荣耀的进房间机制
 > 具体流程
 > 每一个玩家选择一个游戏角色的ID比如鲁班ID为0
@@ -22,6 +21,8 @@ TCP网络服务框架
 
 > 每个玩家断开连接前后，通过Hook函数对消息进行提醒，进入房间或者退出房间
 
+### TLV包
+![avatar](Doc/image/TLV.png)
 ### TCP监听
 ![avatar](Doc/image/server_listen.png)
 ### TCP捕获链接，进入是进行广播
